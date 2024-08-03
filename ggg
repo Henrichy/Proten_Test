@@ -1,0 +1,8 @@
+  submitButton: {
+    backgroundColor: '#2F50C1',
+    paddingVertical: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20, // Margin at the bottom to create some space
+  },
