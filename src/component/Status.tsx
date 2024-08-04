@@ -233,8 +233,8 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     checkboxImage: {
-        width: 24,
-        height: 24,
+        width: 20,
+        height: 20,
     },
     statuses: {
         width: "30%",
