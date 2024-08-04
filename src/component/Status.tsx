@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Image, StyleSheet, Animated, ScrollView } from 'react-native';
 import { getStorage } from '../utils/storageUtils';
 
-const Status = () => {
+const Status = ({reset}) => {
     const [statuses, setStatuses] = useState([
         { id: 1, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'DELIVERED', backgroundColor: '#E3FAD6', textColor: 'green', dropdownHeight: new Animated.Value(0) },
         { id: 2, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'RECEIVED', backgroundColor: '#D9E6FD', textColor: 'blue', dropdownHeight: new Animated.Value(0) },
@@ -42,6 +42,26 @@ const Status = () => {
         fetchShipmentStatuses();
         
     }, []); // Empty dependency array to run only once on mount
+
+
+    useEffect(() => {
+        if (reset) {
+            resetStatus(); // Call resetStatus if reset is true
+        }
+    }, [reset]);
+
+    const resetStatus = () => {
+        setStatuses([
+            { id: 1, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'DELIVERED', backgroundColor: '#E3FAD6', textColor: 'green', dropdownHeight: new Animated.Value(0) },
+            { id: 2, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'RECEIVED', backgroundColor: '#D9E6FD', textColor: 'blue', dropdownHeight: new Animated.Value(0) },
+            { id: 3, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'ON HOLD', backgroundColor: '#FFF3D5', textColor: 'orange', dropdownHeight: new Animated.Value(0) },
+            { id: 4, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'CANCELLED', backgroundColor: '#F4F2F8', textColor: 'gray', dropdownHeight: new Animated.Value(0) },
+            { id: 5, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'DELIVERED', backgroundColor: '#E3FAD6', textColor: 'green', dropdownHeight: new Animated.Value(0) },
+            { id: 6, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'ON HOLD', backgroundColor: '#FFF3D5', textColor: 'orange', dropdownHeight: new Animated.Value(0) },
+            { id: 7, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'DELIVERED', backgroundColor: '#E3FAD6', textColor: 'green', dropdownHeight: new Animated.Value(0) },
+        ]);
+        // You can also reset shipmentStatuses and shipmentList if needed
+    };
 
     const toggleDropdown = (index) => {
         const newStatuses = [...statuses];

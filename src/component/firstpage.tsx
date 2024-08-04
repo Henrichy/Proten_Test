@@ -9,6 +9,7 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     Keyboard,
+    Modal,
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
@@ -16,6 +17,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../AppNavigator';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 type FirstPageNavigationProp = NativeStackNavigationProp<RootStackParamList, 'FirstPage'>;
 
@@ -35,6 +37,9 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
     const [usernameFocused, setUsernameFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
     const [mobileNumberFocused, setMobileNumberFocused] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [loading, setLoading] = useState(false); // Changed to boolean
 
     useEffect(() => {
         scaleAnim.value = withTiming(1, { duration: 2000 }, () => {
@@ -75,12 +80,12 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
             const formData = new FormData();
             formData.append('usr', username);
             formData.append('pwd', password);
-
+    
             const response = await fetch('https://shippex-demo.bc.brandimic.com/api/method/login', {
                 method: 'POST',
                 body: formData,
             });
-
+    
             const data = await response.json();
             console.log('Login Response:', data);
             await setStorage('TheName', data.full_name);
@@ -88,17 +93,27 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
                 // No token to store, just navigate to the next page
                 await setStorage('formData', { username, password, mobileNumber });
                 navigation.navigate('SecondPage');
-
+                // Set modalVisible to false if login is successful
+                setModalVisible(false);
             } else {
-                console.error('Login failed:', data.message);
+                // Show modal with error message
+                setModalMessage('Invalid Credentials');
+                setModalVisible(true);
             }
         } catch (error) {
             console.error('Login Error:', error);
+            // Show modal with error message
+            setModalMessage('Login Error');
+            setModalVisible(true);
+        } finally {
+            setLoading(false); // Stop loading when done
         }
     };
+    
 
     const handleFormSubmit = async () => {
-        login();
+        setLoading(true); // Start loading
+        await login();
         handleCancelPress();
     };
 
@@ -118,7 +133,16 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
                         </View>
                         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
                             <TouchableOpacity style={styles.button} onPress={handleButtonPress}>
-                                <Text style={styles.buttonText}>Login</Text>
+                                <View style={styles.buttonContent}>
+                                    {loading ? (
+                                        <Spinner
+                                            visible={loading}
+                                            textStyle={styles.spinnerTextStyle}
+                                        />
+                                    ) : (
+                                        <Text style={styles.buttonText}>Login</Text>
+                                    )}
+                                </View>
                             </TouchableOpacity>
                         </TouchableWithoutFeedback>
                     </Animated.View>
@@ -196,12 +220,33 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
                         </View>
                     </TouchableWithoutFeedback>
                 </BottomSheet>
+
+                {/* Modal for error/success messages */}
+                <Modal
+                    visible={modalVisible}
+                    transparent
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalBackground}>
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalMessage}>{modalMessage}</Text>
+                            <TouchableOpacity
+                                style={styles.modalButton}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.modalButtonText}>OK</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </GestureHandlerRootView>
     );
 };
 
 const styles = StyleSheet.create({
+    // ... other styles
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -245,6 +290,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#2F50C1', // Blue border
         width: '80%',
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     buttonText: {
         color: '#2F50C1', // Blue text color
@@ -305,6 +354,36 @@ const styles = StyleSheet.create({
     },
     disabledButton: {
         backgroundColor: '#ccc',
+    },
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    },
+    modalContainer: {
+        width: 300,
+        padding: 20,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalMessage: {
+        fontSize: 16,
+        marginBottom: 20,
+    },
+    modalButton: {
+        backgroundColor: '#2F50C1',
+        borderRadius: 5,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+    modalButtonText: {
+        color: '#fff',
+        fontSize: 16,
+    },
+    spinnerTextStyle: {
+        color: '#fff',
     },
 });
 

@@ -3,8 +3,16 @@ import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView,
 import { getStorage } from '../utils/storageUtils';
 import Status from './Status';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../AppNavigator';
 
-const SecondPage = () => {
+type FirstPageNavigationProp = NativeStackNavigationProp<RootStackParamList, 'FirstPage'>;
+
+interface FirstPageProps {
+  navigation: FirstPageNavigationProp;
+}
+
+const SecondPage: React.FC<FirstPageProps> = ({ navigation }) => {
   const [formData, setFormData] = useState(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const [search, setSearch] = useState('');
@@ -38,7 +46,15 @@ const SecondPage = () => {
   };
 
   const handleTabPress = (tabName: string) => {
-    setActiveTab(tabName);
+    if (tabName === 'profile') {
+      handleLogout();
+    } else {
+      setActiveTab(tabName);
+    }
+  };
+  const handleLogout = async () => {
+        // Navigate to FirstPage
+    navigation.navigate('FirstPage');
   };
 
   const handleFilterPress = (filterName: string) => {
@@ -59,8 +75,8 @@ const SecondPage = () => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
   
     // Optionally, re-fetch the form data
-    const data = await getStorage('formData');
-    setFormData(data);
+    const namee = await getStorage('TheName');
+    setFormData(namee);
   
     setRefreshing(false);
   };
@@ -121,7 +137,7 @@ const SecondPage = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Status />
+        <Status reset={refreshing}/>
       </ScrollView>
 
       {/* Custom Bottom Tab Bar */}
