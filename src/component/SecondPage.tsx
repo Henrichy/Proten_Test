@@ -16,9 +16,9 @@ const SecondPage = () => {
 
   useEffect(() => {
     const retrieveFormData = async () => {
-      const data = await getStorage('formData');
-      console.log('Retrieved form data:', data);
-      setFormData(data);
+      const namee = await getStorage('TheName');
+      console.log('Retrieved form data:', namee);
+      setFormData(namee);
     };
     retrieveFormData();
   }, []);
@@ -80,7 +80,7 @@ const SecondPage = () => {
 
       <View style={styles.containerTwo}>
         <Text style={styles.greetingText}>Hello,</Text>
-        {formData && <Text style={styles.userName}>{formData.firstName}</Text>}
+        <Text style={styles.userName}>{formData}</Text>
         <View style={styles.searchContainer}>
           <TextInput
             style={[

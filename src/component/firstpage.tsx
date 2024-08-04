@@ -83,11 +83,12 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
 
             const data = await response.json();
             console.log('Login Response:', data);
-
+            await setStorage('TheName', data.full_name);
             if (data && data.message === 'Logged In') {
                 // No token to store, just navigate to the next page
                 await setStorage('formData', { username, password, mobileNumber });
                 navigation.navigate('SecondPage');
+
             } else {
                 console.error('Login failed:', data.message);
             }
