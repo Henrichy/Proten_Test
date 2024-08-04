@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {setStorage} from '../utils/storageUtils';
+import { setStorage } from '../utils/storageUtils';
 import {
     StyleSheet,
     View,
@@ -9,8 +9,6 @@ import {
     TextInput,
     TouchableWithoutFeedback,
     Keyboard,
-    Platform,
-    KeyboardAvoidingView,
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
@@ -31,27 +29,20 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
     const bottomSheetRef = useRef<BottomSheet>(null);
 
     const snapPoints = useMemo(() => ['50%', '100%'], []);
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
-    const [firstNameFocused, setFirstNameFocused] = useState(false);
-    const [lastNameFocused, setLastNameFocused] = useState(false);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [usernameFocused, setUsernameFocused] = useState(false);
+    const [passwordFocused, setPasswordFocused] = useState(false);
     const [mobileNumberFocused, setMobileNumberFocused] = useState(false);
 
     useEffect(() => {
-        // Animate the logo
         scaleAnim.value = withTiming(1, { duration: 2000 }, () => {
-            // Fade in the blue screen after the logo animation completes
             fadeAnim.value = withTiming(1, { duration: 500 });
         });
 
-        // Add keyboard event listeners
-        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-            // Handle keyboard showing if needed
-        });
-        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-            // Handle keyboard hiding if needed
-        });
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {});
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {});
 
         return () => {
             keyboardDidShowListener.remove();
@@ -59,42 +50,58 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
         };
     }, []);
 
-    const animatedLogoStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scaleAnim.value }],
-        };
-    });
+    const animatedLogoStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scaleAnim.value }],
+    }));
 
-    const animatedFadeStyle = useAnimatedStyle(() => {
-        return {
-            opacity: fadeAnim.value,
-        };
-    });
+    const animatedFadeStyle = useAnimatedStyle(() => ({
+        opacity: fadeAnim.value,
+    }));
 
     const handleButtonPress = () => {
         if (bottomSheetRef.current) {
-            bottomSheetRef.current.expand(); // Open the bottom sheet
+            bottomSheetRef.current.expand();
         }
     };
 
     const handleCancelPress = () => {
         if (bottomSheetRef.current) {
-            bottomSheetRef.current.close(); // Close the bottom sheet
+            bottomSheetRef.current.close();
+        }
+    };
+
+    const login = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('usr', username);
+            formData.append('pwd', password);
+
+            const response = await fetch('https://shippex-demo.bc.brandimic.com/api/method/login', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+            console.log('Login Response:', data);
+
+            if (data && data.message === 'Logged In') {
+                // No token to store, just navigate to the next page
+                await setStorage('formData', { username, password, mobileNumber });
+                navigation.navigate('SecondPage');
+            } else {
+                console.error('Login failed:', data.message);
+            }
+        } catch (error) {
+            console.error('Login Error:', error);
         }
     };
 
     const handleFormSubmit = async () => {
-        // Handle form submission logic here
-        const formData = { firstName, lastName, mobileNumber };
-        // Save form data
-        await setStorage('formData', formData);
-        console.log('Form data saved:', formData);
-        handleCancelPress(); // Close the bottom sheet after submission
-        navigation.navigate('SecondPage');
+        login();
+        handleCancelPress();
     };
 
-    // Check if the form is completely filled
-    const isFormValid = firstName && lastName && mobileNumber;
+    const isFormValid = mobileNumber && username && password;
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -118,9 +125,9 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
                 <BottomSheet
                     ref={bottomSheetRef}
                     snapPoints={snapPoints}
-                    index={-1} // Start closed
-                    keyboardBehavior="extend" // Prevents resizing when the keyboard is shown
-                    keyboardBlurBehavior="restore" // Restore to the previous state when keyboard is hidden
+                    index={-1}
+                    keyboardBehavior="extend"
+                    keyboardBlurBehavior="restore"
                 >
                     <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
                         <View style={styles.bottomSheetContainer}>
@@ -131,45 +138,46 @@ const FirstPage: React.FC<FirstPageProps> = ({ navigation }) => {
                             <View style={styles.formContainer}>
                                 <Text style={styles.headerText}>Login</Text>
                                 <Text style={styles.instructionText}>
-                                    Please enter your First name, Last Name, and your mobile number in order to register
+                                    Please enter your username, password, and mobile number to log in.
                                 </Text>
                                 <TextInput
                                     style={[
                                         styles.input,
                                         {
-                                            borderColor: firstNameFocused ? '#2F50C1' : '#ccc', // Blue border on focus
+                                            borderColor: usernameFocused ? '#2F50C1' : '#ccc',
                                         },
                                     ]}
-                                    placeholder="First Name"
-                                    placeholderTextColor="#888" // Gray placeholder text
-                                    value={firstName}
-                                    onChangeText={setFirstName}
-                                    onFocus={() => setFirstNameFocused(true)}
-                                    onBlur={() => setFirstNameFocused(false)}
+                                    placeholder="Username"
+                                    placeholderTextColor="#888"
+                                    value={username}
+                                    onChangeText={setUsername}
+                                    onFocus={() => setUsernameFocused(true)}
+                                    onBlur={() => setUsernameFocused(false)}
                                 />
                                 <TextInput
                                     style={[
                                         styles.input,
                                         {
-                                            borderColor: lastNameFocused ? '#2F50C1' : '#ccc', // Blue border on focus
+                                            borderColor: passwordFocused ? '#2F50C1' : '#ccc',
                                         },
                                     ]}
-                                    placeholder="Last Name"
-                                    placeholderTextColor="#888" // Gray placeholder text
-                                    value={lastName}
-                                    onChangeText={setLastName}
-                                    onFocus={() => setLastNameFocused(true)}
-                                    onBlur={() => setLastNameFocused(false)}
+                                    placeholder="Password"
+                                    placeholderTextColor="#888"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    onFocus={() => setPasswordFocused(true)}
+                                    onBlur={() => setPasswordFocused(false)}
+                                    secureTextEntry
                                 />
                                 <TextInput
                                     style={[
                                         styles.input,
                                         {
-                                            borderColor: mobileNumberFocused ? '#2F50C1' : '#ccc', // Blue border on focus
+                                            borderColor: mobileNumberFocused ? '#2F50C1' : '#ccc',
                                         },
                                     ]}
                                     placeholder="Mobile Number"
-                                    placeholderTextColor="#888" // Gray placeholder text
+                                    placeholderTextColor="#888"
                                     value={mobileNumber}
                                     onChangeText={setMobileNumber}
                                     keyboardType="phone-pad"
@@ -300,5 +308,3 @@ const styles = StyleSheet.create({
 });
 
 export default FirstPage;
-
-

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, Image, StyleSheet, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, Image, StyleSheet, Animated, ScrollView } from 'react-native';
+import { getStorage } from '../utils/storageUtils';
 
 const Status = () => {
     const [statuses, setStatuses] = useState([
@@ -11,6 +12,36 @@ const Status = () => {
         { id: 6, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'ON HOLD', backgroundColor: '#FFF3D5', textColor: 'orange', dropdownHeight: new Animated.Value(0) },
         { id: 7, isChecked: false, isDropdownVisible: false, isImageUp: false, status: 'DELIVERED', backgroundColor: '#E3FAD6', textColor: 'green', dropdownHeight: new Animated.Value(0) },
     ]);
+    const [shipmentStatuses, setShipmentStatuses] = useState([]);
+    const [shipmentList, setShipmentList] = useState([]);
+
+ 
+    useEffect(() => {
+        const fetchShipmentStatuses = async () => {
+            try {
+                const response = await fetch('https://shippex-demo.bc.brandimic.com/api/method/frappe.client.get_list?doctype=AWB%20Status&fields=%5B%22*%22%5D', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Tasty Test',
+                        'Content-Type': 'application/json',
+                    },
+                });
+        
+                if (response.status === 401) {
+                    console.error('Unauthorized: Token may be invalid or expired.');
+                    return; // Handle unauthorized access
+                }
+        
+                const data = await response.json();
+                setShipmentStatuses(data.data || []); // Assuming data.data holds the array of statuses
+            } catch (error) {
+                console.error('Error fetching shipment statuses:', error);
+            }
+        };
+        
+        fetchShipmentStatuses();
+        
+    }, []); // Empty dependency array to run only once on mount
 
     const toggleDropdown = (index) => {
         const newStatuses = [...statuses];
@@ -45,7 +76,7 @@ const Status = () => {
     };
 
     return (
-        <View>
+        <ScrollView>
             <View style={styles.Shipments}>
                 <Text style={styles.shipmentText}>Shipments</Text>
                 <Pressable
@@ -106,40 +137,57 @@ const Status = () => {
                     </View>
 
                     <Animated.View style={[styles.dropdownContainer, { height: status.dropdownHeight }, status.isImageUp && styles.dropdownContainerExpanded]}>
-                       <View style={{width:'100%', alignItems:'center', justifyContent:'space-between', flexDirection: 'row'}}>
-                        <Text style={styles.dropdownText}>Origin</Text>
-                        <Text style={styles.dropdownText}>Destination</Text>
+                        <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row' }}>
+                            <Text style={styles.dropdownText}>Origin</Text>
+                            <Text style={styles.dropdownText}>Destination</Text>
                         </View>
                         <View style={styles.locContainer}>
-                                <Text style={styles.locText}>Cairo</Text>
-                                <Image style={styles.locIcon} source={require('../../assets/a.png')} />
-                                <Text style={styles.locText}>Alexandria</Text>
-                            </View>
-                        {/* Add more dropdown content here */}
-                        <View style={{width:'100%', alignItems:'center', justifyContent:'space-between', marginTop:-11, flexDirection: 'row'}}>
-                        <Text style={styles.dropText}>Dokki, 22 Nile Str.</Text>
-                        <Text style={styles.dropText}>Smoha, 22 Nile Str.</Text>
+                            <Text style={styles.locText}>Cairo</Text>
+                            <Image style={styles.locIcon} source={require('../../assets/a.png')} />
+                            <Text style={styles.locText}>Alexandria</Text>
                         </View>
-                        <View style={{alignItems:'flex-end', width:'100%', marginTop: -5, gap: 8, marginBottom: 20, flexDirection:'row-reverse'}}>
-                        <View style={{backgroundColor:'#25D366', gap:4, alignItems:'center', marginRight: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius:8, flexDirection: 'row'}}>
-                            <Image style={styles.locIcon} source={require('../../assets/Whatsapp.png')} />
-                            <Text style={{color:'#fff'}}>Whatsapp</Text>
+                        {/* Add more dropdown content here */}
+                        <View style={{ width: '100%', alignItems: 'center', justifyContent: 'space-between', marginTop: -11, flexDirection: 'row' }}>
+                            <Text style={styles.dropText}>Dokki, 22 Nile Str.</Text>
+                            <Text style={styles.dropText}>Smoha, 22 Nile Str.</Text>
+                        </View>
+                        <View style={{ alignItems: 'flex-end', width: '100%', marginTop: -5, gap: 8, marginBottom: 20, flexDirection: 'row-reverse' }}>
+                            <View style={{ backgroundColor: '#25D366', gap: 4, alignItems: 'center', marginRight: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, flexDirection: 'row' }}>
+                                <Image style={styles.locIcon} source={require('../../assets/Whatsapp.png')} />
+                                <Text style={{ color: '#fff' }}>Whatsapp</Text>
                             </View>
-                            <View style={{backgroundColor:'#6E91EC', gap:4, alignItems:'center', marginRight: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius:8, flexDirection: 'row'}}>
-                            <Image style={styles.locIcon} source={require('../../assets/phone.png')} />
-                            <Text style={{color:'#fff'}}>Call</Text>
+                            <View style={{ backgroundColor: '#6E91EC', gap: 4, alignItems: 'center', marginRight: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, flexDirection: 'row' }}>
+                                <Image style={styles.locIcon} source={require('../../assets/phone.png')} />
+                                <Text style={{ color: '#fff' }}>Call</Text>
                             </View>
-                           
-
                         </View>
                     </Animated.View>
                 </View>
             ))}
-        </View>
+
+            {/* Render fetched shipment statuses and shipment list */}
+            <View style={styles.additionalInfoContainer}>
+                <Text style={styles.additionalInfoHeader}>Shipment Statuses</Text>
+                {shipmentStatuses.map((status, index) => (
+                    <Text key={index} style={styles.additionalInfoText}>
+                        {status.status}
+                    </Text>
+                ))}
+            </View>
+            <View style={styles.additionalInfoContainer}>
+                <Text style={styles.additionalInfoHeader}>Shipment List</Text>
+                {shipmentList.map((shipment, index) => (
+                    <Text key={index} style={styles.additionalInfoText}>
+                        {shipment.name}
+                    </Text>
+                ))}
+            </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    // ... previous styles
     statusContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -272,6 +320,21 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: 'gray',
         padding: 10, // Additional padding inside the dropdown
+    },
+    additionalInfoContainer: {
+        padding: 10,
+        backgroundColor: '#F4F2F8',
+        marginTop: 20,
+    },
+    additionalInfoHeader: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    additionalInfoText: {
+        fontSize: 14,
+        color: '#333',
+        marginBottom: 5,
     },
 });
 
