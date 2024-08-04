@@ -54,6 +54,7 @@ const SecondPage: React.FC<FirstPageProps> = ({ navigation }) => {
   };
   const handleLogout = async () => {
         // Navigate to FirstPage
+        onRefresh();
     navigation.navigate('FirstPage');
   };
 
