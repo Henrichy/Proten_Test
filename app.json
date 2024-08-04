@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Test",
+    "name": "ProtenTest",
     "slug": "Test",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/log.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "image": "./assets/6.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -16,12 +16,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/log.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "h.e.n.r.y"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "75c88162-ef77-4266-9b30-476beedfe1c4"
+      }
     }
   }
 }
